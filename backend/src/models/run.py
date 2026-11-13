@@ -9,6 +9,8 @@ class RankTestRun(Base):
     name:Mapped[str]=mapped_column(String(140),unique=True)
     study_id:Mapped[int]=mapped_column(ForeignKey('grade_studies.id'))
     alpha:Mapped[float]=mapped_column(DOUBLE(asdecimal=False),default=.05)
+    bootstrap_seed:Mapped[int]=mapped_column(default=20261113)
+    bootstrap_replicates:Mapped[int]=mapped_column(default=9999)
     status:Mapped[str]=mapped_column(String(20),default='queued')
     snapshot:Mapped[dict]=mapped_column(JSON,default=dict)
     result:Mapped[dict]=mapped_column(JSON,default=dict)

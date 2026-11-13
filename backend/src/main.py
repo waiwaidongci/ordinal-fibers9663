@@ -15,6 +15,14 @@ from src.middlewares.rate_limit import RateLimitMiddleware
 @asynccontextmanager
 async def lifespan(app):
     Base.metadata.create_all(engine)
+    try:
+        import importlib.util
+        from pathlib import Path
+        migration_path=Path(__file__).resolve().parents[1]/'migrations'/'002_run_bootstrap.py'
+        spec=importlib.util.spec_from_file_location('migration_002_run_bootstrap',migration_path)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        module.ensure_run_bootstrap_columns()
+    except Exception:logging.exception('bootstrap column migration failed; app remains available')
     if SEED_DEMO:
         try:
             from scripts.seed_demo import seed

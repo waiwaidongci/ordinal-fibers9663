@@ -32,6 +32,6 @@ def execute_run(db,id):
     if r.status not in (RunStatus.QUEUED,RunStatus.RUNNING):return
     r.status=RunStatus.RUNNING;db.commit()
     try:
-        result=analyze_study(r.snapshot,r.alpha);Path('/artifacts').mkdir(exist_ok=True);Path(f'/artifacts/run-{id}.json').write_text(json.dumps(result,ensure_ascii=False,allow_nan=False));r.result=result;r.error='';r.status=RunStatus.COMPLETED;db.commit()
+        result=analyze_study(r.snapshot,r.alpha,r.bootstrap_seed,r.bootstrap_replicates);Path('/artifacts').mkdir(exist_ok=True);Path(f'/artifacts/run-{id}.json').write_text(json.dumps(result,ensure_ascii=False,allow_nan=False));r.result=result;r.error='';r.status=RunStatus.COMPLETED;db.commit()
     except Exception as exc:
         db.rollback();r=get_run(db,id);r.status=RunStatus.FAILED;r.error=str(exc)[:600];db.commit()

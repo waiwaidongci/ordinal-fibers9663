@@ -1,6 +1,6 @@
 # 青蘖纸浆等级比较簿
 
-以全体独立试样的合并平均秩，比较纸浆形成等级的组间分布；保留并列修正、全部Dunn组对和人工复检说明。
+以全体独立试样的合并平均秩，比较纸浆形成等级的组间分布；保留并列修正、全部Dunn组对和人工复检说明。组对另附优胜比例（并列计半）与按组重抽样的整族同时区间，给出可判断差异大小的方向效应。
 
 ## 研究场景
 
@@ -21,11 +21,11 @@
 1. 09:00 林蘖用analyst登录，打开 `QN-SHIFT 形成错位 · 四工艺复检研究`。
 2. 09:05 核对清水参照、温和酶解、低剪切打浆、复合处理四个预定义工艺，每组30份独立试样，共120份；每份只评一次，编号在本研究内唯一。
 3. 09:15 观察真实等级点阵，确认等级只表示顺序。另两份研究为相近分布、全同等级，合计3研究/12工艺/360份试样。
-4. 09:20 提前设α=.05，命名“形成错位 · 全组秩比较”，冻结全部工艺/试样/等级与说明，再排队由worker计算。
-5. 09:22 阅读总体：H=58.403116，渐近p=1.28925e-12，C=0.9798354。同时查看Dunn方差基数1185.600840和全部6组对；当前Holm拒绝5项。未拒绝组对不会隐藏。
+4. 09:20 提前设α=.05与bootstrap种子/抽样次数（默认20261113/9999），命名“形成错位 · 全组秩比较”，冻结全部工艺/试样/等级与说明，再排队由worker计算。
+5. 09:22 阅读总体：H=58.403116，渐近p=1.28925e-12，C=0.9798354。同时查看Dunn方差基数1185.600840和全部6组对；当前Holm拒绝5项。未拒绝组对不会隐藏。再到“优胜效应/Bootstrap”标签看6个组对的优胜比例（并列计半）与整族同时区间、方向判定与退化标注。
 6. 09:25 在并列与平均秩页核对Σ(t³−t)=34842，逐份检查合并平均秩。下/上中位位置保留原等级，不把偶数样本插值成3.5级。
 7. 09:35 提出“四工艺独立复检说明”，同时说明拒绝/未拒绝组对、可能的分布形状差异与下一批独立盲评设计。
-8. 10:00 宋槐用admin留批注并同意复检；周予用viewer下载 `followup-note-<id>.csv`，含完整总体、四组摘要与六组对。新数据另建快照，旧结果不回写。
+8. 10:00 宋槐用admin留批注并同意复检；周予用viewer下载 `followup-note-<id>.csv`，含完整总体、四组摘要、六组对及优胜比例/整族区间块（旧版结果无该块，按原样导出）。新数据另建快照，旧结果不回写。
 
 以上数值来自固定seed真实API/worker结果。seed不预置检验结果，用户需实际排队。
 
@@ -73,17 +73,29 @@ JWT8小时，PBKDF2-SHA256存储密码。角色授权、审计、统一错误与
 
 Dunn对全部k(k−1)/2组对，使用同一合并秩：`V=N(N+1)/12−T/[12(N−1)]`，`SE_ij=sqrt(V(1/n_i+1/n_j))`，`z=(Rbar_i−Rbar_j)/SE`，双侧p=2 norm.sf(abs(z))。Holm对完整家族原始p排序、乘剩余家族数、取累积最大值并截至1，按调整p≤预设alpha判拒绝。无论KW是否拒绝，全家族都保留。
 
-H的p是χ²渐近，Dunn是正态渐近，不是exact。Holm依赖单项p的适用性，不能把名义alpha说成有限样本无条件保证。等级分布差异可能来自形状；只有额外位置移动/同形状假设才可聚焦中位位置。平均秩差不是等级单位的效应。未拒绝不证明相等/等效。重复测量或配对设计不适用；ID唯一不证明样本独立，批次相关需设计控制。
+### 优胜比例与整族bootstrap区间
+
+平均秩差不是等级单位的效应，因此每个组对再报告一个可直接解释的方向效应：左工艺相对右工艺的优胜比例 `w_ij=P(X_i>X_j)+0.5·P(X_i=X_j)`，即（左严格胜出次数＋并列次数的一半）/两两组比较总数，反向为`1−w_ij`，`w=0.5`代表无方向优势。等级只有1–9整数，计算在9档计数上完成，与逐对比较代数等价且与组样本量无关。
+
+区间用非参数组级bootstrap：每次复算对每个工艺在其自身试样内有放回重抽样，**保留组内原样本数n**；同一次复算同时覆盖全部组对（共享同一组复算索引），因此组对间保持联动。每次复算取全家族 `max_{ij}|w*_ij−w_ij|`，其(1−α)线性插值分位数是**全族共享的单一半径r**，各组对区间为 `[clip(w_ij−r,0,1), clip(w_ij+r,0,1)]`。这是非学生化的整族最大偏差百分位（family-wise max-deviation percentile）区间：在1–9离散且大量并列的网格上，学生化percentile-t因bootstrap标准误自身不稳会欠覆盖，模拟显示最大偏差法在预设α下的整族同时覆盖率稳定在名义水平附近，且零标准误组对无需特判。
+
+**退化情形**：若全部重抽样复算与冻结估计完全一致（例如全同等级、或组对在任何重抽样下都严格分胜负），`degenerate=true`，临界半径记null、区间退化为点估计本身，并在结果页与CSV明确标注。这表示当前冻结试样在非参数重抽样下无可观测变异，**不是**“两组相等/差异为零”的证据。零bootstrap SE的组对单列`zero_se_pairs`，仍由全族共享半径覆盖。
+
+种子（默认20261113，0–2³²−1整数）与抽样次数（默认9999，100–100000）在排队时随α一起冻结，写入SHA256指纹；同环境同输入逐位可复算，改种子/次数/α都会改变指纹。bootstrap是Monte Carlo近似，覆盖为近似的有限样本同时保证而非exact；离散网格使端点粗糙，截断到[0,1]也可能缩短区间。
+
+H的p是χ²渐近，Dunn是正态渐近，不是exact。Holm依赖单项p的适用性，不能把名义alpha说成有限样本无条件保证。等级分布差异可能来自形状；只有额外位置移动/同形状假设才可聚焦中位位置。平均秩差不是等级单位的效应，优胜比例是有序方向效应（不是工艺质量概率，也不是因果结论）。未拒绝不证明相等/等效；bootstrap区间跨过0.5只代表方向未定，不证明两工艺等效。重复测量或配对设计不适用；ID唯一不证明样本独立，批次相关需设计控制。
 
 全同值时C=0，KW与Dunn未定义，任务失败，不输出p=1来假称无差异。非法等级、外部工艺、重复试样、少于5份/组、空组均明确拒绝或留下worker失败态。公式参见 [SciPy Kruskal](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kruskal.html) 与 [Dunn原论文](https://www.stat.cmu.edu/technometrics/59-69/VOL-06-03/v0603241.pdf)。
 
-快照按工艺/试样代码规范排序，SHA256覆盖版本、完整输入、alpha；同环境完整复算一致，输入列表顺序不改变整份计算结果。指纹含数据库ID和说明元数据，重建库/修改来源不保证相同指纹。结果同时存数据库和/artifacts/run-<id>.json，全部原始等级、平均秩、并列项与组对可核查。
+快照按工艺/试样代码规范排序，SHA256覆盖版本、完整输入、alpha、bootstrap种子与抽样次数；同环境完整复算一致，输入列表顺序不改变整份计算结果。指纹含数据库ID和说明元数据，重建库/修改来源不保证相同指纹。结果同时存数据库和/artifacts/run-<id>.json，全部原始等级、平均秩、并列项、组对与优胜bootstrap留档可核查。
+
+历史结果（v1，无winner_effects）继续按存储的JSON原样展示与分发：结果页优胜标签显示“旧版冻结检验无此结果、不补算不改写”，组对表不出现优胜列，分发CSV不追加优胜块；需要效应量时对当前冻结数据另建检验。对已存在的库，启动时执行幂等迁移002仅补`bootstrap_seed/bootstrap_replicates`两列（带默认值），不触碰历史result。
 
 ## 代码与本地开发
 
 五个实体GradeStudy、Treatment、GradeReading、RankTestRun、FollowupNote各自贯穿model/schema/service/controller/route/API。studyStore、measurementsStore、researchStore承接对应状态；六页为总览、来源、配置、结果、说明、审计，登录另计。GradeDots复用于总览/结果，PairFamilyTable复用于结果/说明；共享PageHeading、StatusBadge、ErrorNotice、StudySelect、RunSelect，hooks useTask/usePolling、format工具。所有宽图/表局部滚动，grid显式minmax(0,1fr)/min-width:0；结果工艺选择按真实已加载组同步。
 
-目录：backend/src/{models,schemas,services,controllers,routes,config,constants,middlewares,utils}；数学services/{rank_pool,dunn,rank_inference}.py；backend/scripts/seed_demo.py与migrations/001_initial.sql。frontend/src/{api,stores,types,constants,components/common,hooks,pages,router,utils}。
+目录：backend/src/{models,schemas,services,controllers,routes,config,constants,middlewares,utils}；数学services/{rank_pool,dunn,bootstrap_effects,rank_inference}.py；backend/scripts/seed_demo.py与migrations/{001_initial.sql,002_run_bootstrap.py}。frontend/src/{api,stores,types,constants,components/common,hooks,pages,router,utils}。
 
 Role/RunStatus/NoteStatus前后端分别定义于backend/src/constants/enums.py和frontend/src/constants/enums.ts，角色类型在types/domain.ts；RunStatus用于运行service/worker，NoteStatus用于schema/service，前端用于状态与账户/页面。等级枚举1–9在前端constants/enums.ts，后端schemas/reading.py与rank_inference.py严格校验。
 

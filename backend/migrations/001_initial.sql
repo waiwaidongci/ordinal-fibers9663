@@ -42,6 +42,8 @@ CREATE TABLE rank_test_runs (
 	name VARCHAR(140) NOT NULL,
 	study_id INTEGER NOT NULL,
 	alpha DOUBLE NOT NULL,
+	bootstrap_seed INTEGER NOT NULL DEFAULT 20261113,
+	bootstrap_replicates INTEGER NOT NULL DEFAULT 9999,
 	status VARCHAR(20) NOT NULL,
 	snapshot JSON NOT NULL,
 	result JSON NOT NULL,
