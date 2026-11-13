@@ -1,0 +1,1 @@
+<script setup lang="ts">defineProps<{no:string;title:string;sub:string}>()</script><template><div class="page-heading"><span>{{no}}</span><div><p class="eyebrow">QINGNIE / ORDINAL FIBERS</p><h1>{{title}}</h1><p>{{sub}}</p></div></div></template>

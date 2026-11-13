@@ -1,0 +1,1 @@
+export const roles={admin:'复检负责人',analyst:'检验分析员',viewer:'纸材观察员'};export const runStatus={queued:'等待检验',running:'正在合并排秩',completed:'已完成',failed:'输入未能计算'};export const noteStatus={draft:'待复检审阅',approved:'同意复检',rejected:'退回补充'};export const grades=[1,2,3,4,5,6,7,8,9];
